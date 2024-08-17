@@ -1,0 +1,120 @@
+<html layout:decorate="~{layout}">
+<!--decorate는 상속을 해줄 템플릿(부모 템플릿, 여기서는 layout.html)을 설정한다.-->
+<div layout:fragment="content" class="container my-3">
+	<!--부모 템플릿(layout.html)에 작성한 layout:fragment="content" 을 동일하게 작성해준다.-->
+	
+	<!-- 검색 기능(등록, 검색) -->
+	<div class="row my-3">
+		<div class="col-6">
+			<a th:href="@{/question/create}" class="btn btn-primary">질문 등록하기</a>
+		</div>
+		<div class="col-6">
+			<div class="input-group">
+				<input type="text" id="search_kw" class="form-control" th:value="${kw}">
+				<button class="btn btn-outline-secondary" type="button" id="btn_search">찾기</button>
+			</div>
+		</div>
+	</div>
+	
+	<table class="table">
+		<thead class="table-dark">
+			<tr class="text-center">
+				<th>번호</th>
+				<!--				번호는 ${loop.count}를 사용하여 표시한다.-->
+				<th style="width: 50%;">제목</th>
+				<!--				제목은 ${question.subject}를 사용하여 표시한다.-->
+				<th>글쓴이</th>
+				<th>작성일시</th>
+				<!--				작성일시는 타임리프의 #{temporals.format(날짜 객체, 날짜 포맷)} 을 사용하여 표시한다.-->
+			</tr>
+		</thead>
+		<tbody>
+			<!--			<tr th:each="question, loop : ${questionList}">-->
+			<!--			컨트롤러에서 getlist를 questionList가 아니라 paging으로 받고있기에 수정하였다.-->
+			<tr class="text-center" th:each="question, loop : ${paging}">
+				<!--			<tr th:each="question : ${questionList}">-->
+				<!--			Model 객체에 저장한 questionList를 ${questionList} 로 읽어온다.-->
+				<!--			each를 작성함으로서 questionList에 저장된 데이터를 하나씩 꺼내 question 변수에 대입한 후 questionList의 개수만큼-->
+				<!--			반복하며 <tr>....</tr> 문장을 출력하라는 의미이다. 자바의 for each와 비슷하다.-->
+
+				<td th:text="${paging.getTotalElements - (paging.number * paging.size) - loop.index}"></td>
+				<!--			<td th:text="${loop.count}"></td>-->
+				<!--			<td th:text="${question.subject}"></td>-->
+				<!--			<td th:text="${question.createDate}"></td>-->
+				<td class="text-start">
+					<a th:href="@{|/question/detail/${question.id}|}" th:text="${question.subject}"></a>
+					<!--			<a> 태그를 이용하기 위해서는 url을 반드시 @{와 } 문자 사이에 입력해야한다.-->
+					<!--			| 를 사용한 이유는 /question/detail 과 같은 문자열과 @{question.id} 와 같은 자바 객체의 값을 더할 때 좌우로 작성해줘야하기 때문이다.-->
+					<span class="text-danger small ms-2" th:if="${#lists.size(question.answerList) > 0}"
+						th:text="${#lists.size(question.answerList)}">
+						<!--			답변이 있다면 (size로 확인)size를 text로 표시해라.-->
+					</span>
+				</td>
+				<td><span th:if="${question.author != null}" th:text="${question.author.username}"></span></td>
+				<!--			작성자의 이름이 null이 아니라면, username을 작성해준다.-->
+				<td th:text="${#temporals.format(question.createDate, 'yyyy-MM-dd HH:mm')}"></td>
+				<!--			<td th:text="${question.createDate}"></td>-->
+			</tr>
+		</tbody>
+	</table>
+	<!-- 페이징 처리 시작 -->
+	<div th:if="${!paging.isEmpty()}">
+		<ul class="pagination justify-content-center">
+			<!--			pagination 컴포넌트 =  페이지 리스트 표시 bootstrap의 기능-->
+			<!--			page-... 는 모두 bootstrap의 pagination 컴포넌트의 클래스들이다.-->
+			<li class="page-item" th:classappend="${!paging.hasPrevious} ? 'disabled'">
+<!--				<a class="page-link" th:href="@{|?page=${paging.number-1}|}">-->
+				<a class="page-link" href="javascript:void(0)" th:data-page="${paging.number-1}">
+					<span>이전</span>
+				</a>
+			</li>
+			<li th:each="page: ${#numbers.sequence(0, paging.totalPages-1)}"
+				th:if="${page >= paging.number-5 and page <= paging.number+5}"
+				th:classappend="${page == paging.number} ? 'active'" class="page-item">
+<!--				<a th:text="${page}" class="page-link" th:href="@{|?page=${page}|}"></a>-->
+				<a th:th:text="${page}" class="page-link" href="javascript:void(0)" th:data-page="${page}"></a>
+			</li>
+			<li class="page-item" th:classappend="${!paging.hasNext} ? 'disabled'">
+<!--				<a class="page-link" th:href="@{|?page=${paging.number+1}|}">-->
+				<a class="page-link" href="javascript:void(0)" th:data-page="${paging.number+1}">
+					<span>다음</span>
+				</a>
+			</li>
+		</ul>
+	</div>
+	<!-- 페이징 처리 끝 -->
+<!--	<a th:href="@{/question/create}" class="btn btn-primary">질문 등록하기</a>-->
+	<form th:action="@{/question/list}" method="get" id="searchForm">
+		<input type="hidden" id="kw" name="kw" th:value="${kw}">
+		<input type="hidden" id="page" name="page" th:value="${paging.number}">
+	</form>
+
+</div>
+
+<script layout:fragment="script" type='text/javascript'>
+	const page_elements = document.getElementsByClassName("page-link");
+	Array.from(page_elements).forEach(function(element) {
+		element.addEventListener('click', function() {
+			document.getElementById('page').value = this.dataset.page;
+			document.getElementById('searchForm').submit();
+		});
+	});
+	// data-page 속성값을 읽어 searchFrom의 page 필드에 설정하여 searchForm을 요청한다.
+	
+	const btn_search = document.getElementById("btn_search");
+	btn_search.addEventListener('click', function() {
+		document.getElementById('kw').value = document.getElementById('search_kw').value;
+		document.getElementById('page').value = 0; // 검색 버튼을 클릭할 경우 0 페이지부터 조회한다.
+		document.getElementById('searchForm').submit();
+	});
+	// 검색을 클릭하면 검색창에 입력된 값을 searchFrom의 kw 필드에 서정하여 serarchFrom을 요청한다.
+	
+</script>
+
+</html>
+
+
+<!--<h2>Hello World!</h2>
+<p>Thymeleaf(스프링에서 추천하는 템플릿 엔진)를 이용해 java코드에 바로 브라우저 내에서 응답하는 문자열을 작성하였다.<br>
+	템플릿이란 자바 코드를 삽입할 수 있는 HTML형식의 파일을 말한다.
+</p>-->

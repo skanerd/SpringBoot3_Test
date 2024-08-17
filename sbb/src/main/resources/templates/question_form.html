@@ -1,0 +1,40 @@
+<html layout:decorate="~{layout}">
+	<div layout:fragment="content" class="container">
+		<h5 class="my-3 border-bottom pb2">질문 등록</h5>
+		<form th:object="${questionForm}" method="post">
+			<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+<!--			토큰 생성 부분은 보여줄 필요가 없으므로 hidden으로 가려준다.-->
+
+<!--		<form th:action="@{/question/create}" th:object="${questionForm}" method="post">-->
+<!--			th:object 는 form의 입력 값들이 questionForm과 연결되어있다는 뜻이다.-->
+<!--			수정 기능을 추가하기 위해 주석처리하고 _csrf.parameterName 등을 작성한다.-->
+
+			<div th:replace="~{form_errors :: formErrorsFragment}"></div>
+<!--			replace 속성에 의해 div의 내용물이 대체된다. -->
+
+<!--			<div class="alert alert-danger" role="alert" th:if="${#fields.hasAnyErrors()}">-->
+<!--				alert alert-danger 를 통해 오류메세지를 붉은 색으로 표시 가능하다.-->
+<!--				if() 문이 true 즉, 무언가 예외가 발생한다면 QuestionForm이 검증에 실패한 것이다.-->
+<!--				<div th:each="err : ${#fields.allErrors()}" th:text="${err}" />-->
+<!--				fields.allErrors() 에는 오류의 내용이 담겨있다.-->
+<!--			</div>-->
+			<div class="mb-3">
+				<label for="subject" class="form-label">제목</label>
+<!--				<input type="text" name="subject" id="student" class="form-control">-->
+				<input type="text" th:field="*{subject}" class="form-control">
+<!--				name, id 속성 대신에 th:field 속성을 작성했다. 이렇게 하면 해당 태그(여기서는 input)의 id name value 속성이 자동으로 생성되고-->
+<!--				타임리프가 value 속성에 기존에 입력된 값을 채워 넣어 오류가 발생하더라도 기존에 입력한 값(제목,내용)은 유지된다.-->
+<!--				-> 제목만 혹은 내용만 입력하고 등록하기 누르면 내용이 날아가버리는데 그거 방지하기 위해-->
+			</div>
+			<div class="mb-3">
+				<label for="content" class="form-label">내용</label>
+<!--				<textarea name="content" id="content" class="form-control" rows="10"></textarea>-->
+				<textarea th:field="*{content}" class="form-control" rows="10"></textarea>
+<!--				name, id 속성 대신에 th:field 속성을 작성했다. 이렇게 하면 해당 태그(여기서는 textarea)의 id name value 속성이 자동으로 생성되고-->
+<!--				타임리프가 value 속성에 기존에 입력된 값을 채워 넣어 오류가 발생하더라도 기존에 입력한 값(제목,내용)은 유지된다.-->
+<!--				-> 제목만 혹은 내용만 입력하고 등록하기 누르면 내용이 날아가버리는데 그거 방지하기 위해-->
+			</div>
+			<input type="submit" value="저장하기" class="btn btn-primary my-2">
+		</form>
+	</div>
+</html>

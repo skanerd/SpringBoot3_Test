@@ -1,0 +1,4 @@
+<div th:fragment="formErrorsFragment" class="alert alert-danger" role="alert" th:if="${#fields.hasAnyErrors()}">
+<!--	fragment 속성은 다른 템플릿에서 이 div를 사용하기 위해 이름을 설정한 것이다.-->
+	<div th:each="err : ${#fields.allErrors()}" th:text="${err}" />	
+</div>
